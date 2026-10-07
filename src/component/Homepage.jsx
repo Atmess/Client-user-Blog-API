@@ -1,10 +1,12 @@
-
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import stream from '../assets/picture/800px-LiveTwins.png';
+import { useAuth } from '../context/AuthContext';
 
-export default function Home({ user }) {
+
+export default function Home() {
+
+  const {user} = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

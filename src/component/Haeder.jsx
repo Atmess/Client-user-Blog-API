@@ -16,14 +16,8 @@ export default function Header({ page, setpage }) {
       <Link to="/shop">
         {' '}
         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-800 transition">
-          Shop
+          Card
         </button>
-      </Link>
-      <Link to="/cart">
-        {' '}
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-800 transition">
-          Cart
-        </button>{' '}
       </Link>
       
        {user ? (
