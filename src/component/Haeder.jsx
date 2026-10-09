@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Header({ page, setpage }) {
 
- const { user, loading ,logout } = useAuth();
+ const { user ,logout } = useAuth();
 
   return (<div >
     <nav className="flex justify-center gap-4 p-4 ">
@@ -13,6 +13,13 @@ export default function Header({ page, setpage }) {
           Home
         </button>
       </Link>
+       <Link to="/dashboard">
+        {' '}
+        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-800 transition">
+          dashboard
+        </button>
+      </Link>
+      
       <Link to="/shop">
         {' '}
         <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-800 transition">

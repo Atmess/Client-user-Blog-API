@@ -10,6 +10,7 @@ import Accessories from './Accessories';
 import MyDeck from './MyDeck';
 import Login from './Login';
 import Register from './Register';
+import Dashboard from '../dashboard/Dashboard';
 
 const routes = [
   {
@@ -32,6 +33,9 @@ const routes = [
       { path: 'cart', element: <Cart /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
+      { path: 'dashboard' ,
+        element:<Dashboard/>,
+        }
     ],
   },
 ];
