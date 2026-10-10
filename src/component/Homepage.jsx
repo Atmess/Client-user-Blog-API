@@ -10,16 +10,26 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
+  const token = localStorage.getItem('token');
+  const [visibleCount, setVisibleCount] = useState(6); // Starts showing 6 posts
+  const handleLoadMore = () => {
+    setVisibleCount((prevCount) => prevCount + 6);
+  };
   // Fetch published blog posts on component mount
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/posts');
+      const response = await fetch('http://localhost:8080/api/post/getAllPublish', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
         if (!response.ok) {
           throw new Error('Failed to fetch posts');
         }
         const data = await response.json();
+        console.log(data)
         setPosts(data);
       } catch (err) {
         console.error('Error fetching home posts:', err);
@@ -66,6 +76,7 @@ export default function Home() {
                 >
                   Go to Dashboard
                 </Link>
+                <button onClick={()=>{console.log(posts)}}>Test</button>
               </>
             ) : (
               <>
@@ -133,13 +144,14 @@ export default function Home() {
         {/* Posts Grid */}
         {!loading && !error && posts.length > 0 && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
+            {posts.slice(0,visibleCount).map((post) => (
               <article
                 key={post.id}
                 className="bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 rounded-xl p-6 transition flex flex-col justify-between shadow-sm hover:shadow-md"
-              >
+              > 
                 <div>
-                  <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
+                  
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-3 ">
                     <span>By {post.author?.username || 'Unknown'}</span>
                     <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                   </div>
@@ -159,8 +171,17 @@ export default function Home() {
                 </Link>
               </article>
             ))}
+            
           </div>
         )}
+        {visibleCount < posts.length && (
+            <button 
+              onClick={handleLoadMore} 
+              className="load-more-btn mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Load More ({posts.length - visibleCount} remaining)
+            </button>
+          )}
       </main>
 
       {/* FOOTER */}

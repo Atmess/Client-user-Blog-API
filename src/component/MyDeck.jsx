@@ -23,7 +23,7 @@ export default function MyDeck() {
   );
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-4 max-w-7xl mx-auto bg-white " >
       {/* ===================================== */}
       {/* MAIN DECK SECTION                     */}
       {/* ===================================== */}
