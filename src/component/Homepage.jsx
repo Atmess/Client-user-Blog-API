@@ -11,9 +11,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
-  const [visibleCount, setVisibleCount] = useState(6); // Starts showing 6 posts
+  const [visibleCount, setVisibleCount] = useState(4); // Starts showing 6 posts
   const handleLoadMore = () => {
-    setVisibleCount((prevCount) => prevCount + 6);
+    setVisibleCount((prevCount) => prevCount + 4);
   };
   // Fetch published blog posts on component mount
   useEffect(() => {
@@ -143,37 +143,48 @@ export default function Home() {
 
         {/* Posts Grid */}
         {!loading && !error && posts.length > 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.slice(0,visibleCount).map((post) => (
-              <article
-                key={post.id}
-                className="bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 rounded-xl p-6 transition flex flex-col justify-between shadow-sm hover:shadow-md"
-              > 
-                <div>
-                  
-                  <div className="flex items-center justify-between text-xs text-slate-400 mb-3 ">
-                    <span>By {post.author?.username || 'Unknown'}</span>
-                    <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 hover:text-blue-400">
-                    <Link to={`/posts/${post.id}`}>{post.title}</Link>
-                  </h3>
-                  <p className="text-slate-400 text-sm line-clamp-3 mb-4">
-                    {post.content}
-                  </p>
-                </div>
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {posts.slice(0, visibleCount).map((post) => (
+      <article
+        key={post.id}
+        className="bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 rounded-xl p-6 transition flex flex-col justify-between shadow-sm hover:shadow-md overflow-hidden"
+      > 
+        <div>
+          {/* Optional Image Thumbnail from post.files */}
+          {post.files && post.files.length > 0 && (
+            <div className="mb-4 -mx-6 -mt-6">
+              <img 
+                src={post.files[0].url} 
+                alt={post.files[0].name || post.title} 
+                className="w-full h-48 object-cover border-b border-slate-700/60"
+              />
+            </div>
+          )}
 
-                <Link
-                  to={`/posts/${post.id}`}
-                  className="text-sm font-semibold text-blue-400 hover:text-blue-300 inline-flex items-center gap-1"
-                >
-                  Read full article &rarr;
-                </Link>
-              </article>
-            ))}
-            
+          <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
+            <span>By {post.author?.username || 'Unknown'}</span>
+            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
           </div>
-        )}
+
+          <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 hover:text-blue-400">
+            <Link to={`/posts/${post.id}`}>{post.title}</Link>
+          </h3>
+          
+          <p className="text-slate-400 text-sm line-clamp-3 mb-4">
+            {post.content}
+          </p>
+        </div>
+
+        <Link
+          to={`/posts/${post.id}`}
+          className="text-sm font-semibold text-blue-400 hover:text-blue-300 inline-flex items-center gap-1"
+        >
+          Read full article &rarr;
+        </Link>
+      </article>
+    ))}
+  </div>
+)}
         {visibleCount < posts.length && (
             <button 
               onClick={handleLoadMore} 

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import Postcard from './Postcard';
+import PostCreateform from './Postcreateform';
+import Postscedule from './Postschedule';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -250,214 +253,39 @@ export default function Dashboard() {
         ) : (
           <div className="grid gap-4">
             {posts.map((post) => (
-              <div
+              <Postcard
                 key={post.id}
-                className="bg-slate-800/80 p-5 rounded-xl border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-              >
-                {/* Left Section: Text Content & Optional Image Thumbnail */}
-                <div className="flex items-start gap-4 max-w-2xl">
-                  {post.files && post.files.length > 0 && (
-                    <div className="shrink-0 flex gap-2">
-                      {post.files.map((file) => (
-                        <img 
-                          key={file.id}
-                          src={file.url} 
-                          alt={file.name} 
-                          className="h-20 w-20 rounded-lg object-cover border border-slate-700" 
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="space-y-1">
-                    <h2 className="text-xl font-semibold text-white">{post.title}</h2>
-                    <p className="text-sm text-slate-400 line-clamp-2">{post.content}</p>
-                    <p className="text-xs text-slate-500">
-                      Last updated: {new Date(post.updatedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right Section: Action Buttons */}
-                <div className="flex items-center gap-2 self-end sm:self-auto">
-                  {activeTab === 'drafts' ? (
-                    <>
-                      {!post.published && (
-                        <button 
-                          onClick={() => openScheduleModal(post.id)}
-                          className="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-2 rounded transition"
-                        >
-                          Schedule
-                        </button>
-                      )}
-                      {!post.published && (
-                        <button
-                          onClick={() => handlePublishDraft(post.id)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded transition"
-                        >
-                          Publish
-                        </button>
-                      )}
-                      <button
-                        onClick={() => openEditModal(post)}
-                        className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded transition"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded transition"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => openEditModal(post)}
-                        className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded transition"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded transition"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
+                post={post}
+                activeTab={activeTab}
+                openScheduleModal={openScheduleModal}
+                handlePublishDraft={handlePublishDraft}
+                openEditModal={openEditModal}
+                handleDeletePost={handleDeletePost}
+              />
             ))}
           </div>
         )}
 
         {/* CREATE / EDIT POST MODAL */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-              <h2 className="text-xl font-bold text-white">
-                {editingPost ? 'Edit Post' : 'Create New Post'}
-              </h2>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
-                    placeholder="Article title..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Content</label>
-                  <textarea
-                    required
-                    rows="6"
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
-                    placeholder="Write article body..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="UploadFile" className="block text-sm font-medium text-slate-300 mb-1">Upload Attachment</label>
-                  <input 
-                    type="file" 
-                    name="UploadFile" 
-                    id="UploadFile" 
-                    className="w-full text-sm text-slate-400
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-lg file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-blue-600 file:text-white
-                      file:cursor-pointer hover:file:bg-blue-700
-                      bg-slate-900 border border-slate-700 rounded-lg cursor-pointer
-                      file:transition"
-                  />
-                </div>
-
-                {!editingPost && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="published"
-                      checked={formData.published}
-                      onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                      className="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700"
-                    />
-                    <label htmlFor="published" className="text-sm text-slate-300">
-                      Publish immediately
-                    </label>
-                  </div>
-                )}
-                
-                <div className="flex justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition disabled:opacity-50"
-                  >
-                    {isSubmitting ? 'Saving...' : editingPost ? 'Update Post' : 'Save Post'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <PostCreateform
+          formData={formData}
+          setFormData={setFormData}
+          handleSubmit={handleSubmit}
+          closeModal={closeModal}
+          isSubmitting={isSubmitting}
+          editingPost={editingPost}
+          />
         )}
 
         {/* SCHEDULE MODAL */}
         {isScheduleModalOpen && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-            <div className="bg-slate-800 text-white rounded-xl p-6 max-w-sm w-full space-y-4 shadow-xl border border-slate-700">
-              <h3 className="text-lg font-semibold">Schedule Post Publication</h3>
-
-              <form onSubmit={handleSchedule} className="space-y-4">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">
-                    Select Date & Time (Future Only)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    required
-                    min={new Date().toISOString().slice(0, 16)}
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsScheduleModalOpen(false)}
-                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded transition"
-                  >
-                    Confirm Schedule
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <Postscedule
+          handleSchedule={handleSchedule}
+          setIsScheduleModalOpen={setIsScheduleModalOpen}
+          setScheduledDate={setScheduledDate}
+          scheduledDate={scheduledDate}
+          />
         )}
 
       </div>
