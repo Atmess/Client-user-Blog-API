@@ -12,14 +12,14 @@ export default function Dashboard() {
 
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState(null); // null when creating, post object when editing
+  const [editingPost, setEditingPost] = useState(null);
   const [formData, setFormData] = useState({ title: '', content: '', published: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-// Schedule Modal State
-const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-const [schedulingPostId, setSchedulingPostId] = useState(null);
-const [scheduledDate, setScheduledDate] = useState('');
+  // Schedule Modal State
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [schedulingPostId, setSchedulingPostId] = useState(null);
+  const [scheduledDate, setScheduledDate] = useState('');
 
   const token = localStorage.getItem('token');
 
@@ -32,7 +32,6 @@ const [scheduledDate, setScheduledDate] = useState('');
     setLoading(true);
     setError('');
     
-    // Choose endpoint based on active tab
     const endpoint = activeTab === 'drafts' 
       ? 'http://localhost:8080/api/post/draft' 
       : 'http://localhost:8080/api/post/published';
@@ -67,18 +66,33 @@ const [scheduledDate, setScheduledDate] = useState('');
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('content', formData.content);
+      data.append('published', formData.published);
+      
+      if (formData.publishTime) {
+        data.append('publishTime', formData.publishTime);
+      }
+
+      const fileInput = document.querySelector('#UploadFile');
+      if (fileInput && fileInput.files[0]) {
+        data.append('upload', fileInput.files[0]);
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: data,
       });
 
       if (!response.ok) throw new Error('Failed to save post');
+      
+      const result = await response.json();
+      console.log("Saved post result:", result);
 
-      // Refresh list and reset modal
       closeModal();
       fetchPosts();
     } catch (err) {
@@ -88,7 +102,7 @@ const [scheduledDate, setScheduledDate] = useState('');
     }
   };
 
-  // 3. PUBLISH DRAFT (PATCH /posts/:id/publish)
+  // 3. PUBLISH DRAFT
   const handlePublishDraft = async (postId) => {
     try {
       const response = await fetch(`http://localhost:8080/api/post/${postId}/publishdraft`, {
@@ -99,50 +113,47 @@ const [scheduledDate, setScheduledDate] = useState('');
       });
 
       if (!response.ok) throw new Error('Failed to publish draft');
-
-      // Refresh posts list
       fetchPosts();
     } catch (err) {
       alert(err.message);
     }
   };
 
-// 2. Submit scheduled date to backend
-const handleSchedule = async (e) => {
-  e.preventDefault();
-  if (!scheduledDate || !schedulingPostId) return;
+  // 4. SCHEDULE POST
+  const handleSchedule = async (e) => {
+    e.preventDefault();
+    if (!scheduledDate || !schedulingPostId) return;
 
-  try {
-    const response = await fetch(
-      `http://localhost:8080/api/post/${schedulingPostId}/publishdraft`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          publishTime: scheduledDate, // Send date to backend
-        }),
-      }
-    );
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/post/${schedulingPostId}/publishdraft`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            publishTime: scheduledDate,
+          }),
+        }
+      );
 
-    if (!response.ok) throw new Error('Failed to schedule post');
+      if (!response.ok) throw new Error('Failed to schedule post');
 
-    // Close modal and refresh UI
-    setIsScheduleModalOpen(false);
-    setSchedulingPostId(null);
-    fetchPosts();
-  } catch (err) {
-    alert(err.message);
-  }
-};
-  // 4. DELETE POST (DELETE /posts/:id)
+      setIsScheduleModalOpen(false);
+      setSchedulingPostId(null);
+      fetchPosts();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // 5. DELETE POST
   const handleDeletePost = async (postId) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
 
     try {
-      console.log(user && token)
       const response = await fetch(`http://localhost:8080/api/post/${postId}`, {
         method: 'DELETE',
         headers: {
@@ -152,7 +163,6 @@ const handleSchedule = async (e) => {
 
       if (!response.ok) throw new Error('Failed to delete post');
 
-      // Optimistically filter deleted post from state
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     } catch (err) {
       alert(err.message);
@@ -175,14 +185,15 @@ const handleSchedule = async (e) => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingPost(null);
+    setFormData({ title: '', content: '', published: false });
   };
 
-  // 1. Open Modal for a specific post
-const openScheduleModal = (postId) => {
-  setSchedulingPostId(postId);
-  setScheduledDate(''); // Reset date input
-  setIsScheduleModalOpen(true);
-};
+  const openScheduleModal = (postId) => {
+    setSchedulingPostId(postId);
+    setScheduledDate('');
+    setIsScheduleModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -243,65 +254,79 @@ const openScheduleModal = (postId) => {
                 key={post.id}
                 className="bg-slate-800/80 p-5 rounded-xl border border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
               >
-                <div className="space-y-1 max-w-2xl">
-                  <h2 className="text-xl font-semibold text-white">{post.title}</h2>
-                  <p className="text-sm text-slate-400 line-clamp-2">{post.content}</p>
-                  <p className="text-xs text-slate-500">
-                    Last updated: {new Date(post.updatedAt).toLocaleDateString()}
-                  </p>
-                </div>
-                 
-                <div className="flex items-center gap-2 self-end sm:self-auto ">
-                  {activeTab ==='drafts' ? (<div>
-                  {/*<button onClick={()=>{console.log(activeTab)}}> test</button>*/}
-                  {!post.published && (
-                      <button  
-                        onClick={() => openScheduleModal(post.id)}
-                        className="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-2 rounded transition"
-                      >
-                        Schedule
-                      </button>
-                    )}
-                  {/* Quick-Publish button for Drafts */}
-                  {!post.published && (
-                    <button
-                      onClick={() => handlePublishDraft(post.id)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded transition"
-                    >
-                      Publish
-                    </button>                    
+                {/* Left Section: Text Content & Optional Image Thumbnail */}
+                <div className="flex items-start gap-4 max-w-2xl">
+                  {post.files && post.files.length > 0 && (
+                    <div className="shrink-0 flex gap-2">
+                      {post.files.map((file) => (
+                        <img 
+                          key={file.id}
+                          src={file.url} 
+                          alt={file.name} 
+                          className="h-20 w-20 rounded-lg object-cover border border-slate-700" 
+                        />
+                      ))}
+                    </div>
                   )}
-                   <button
-                    onClick={() => openEditModal(post)}
-                    className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded transition"
-                  >
-                    Edit
-                  </button>
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeletePost(post.id)}
-                    className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded transition"
-                  >
-                    Delete
-                  </button>
-                  </div>):(<div> 
-                  {/* Edit Button */}
-                  <button
-                    onClick={() => openEditModal(post)}
-                    className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded transition"
-                  >
-                    Edit
-                  </button>
+                  <div className="space-y-1">
+                    <h2 className="text-xl font-semibold text-white">{post.title}</h2>
+                    <p className="text-sm text-slate-400 line-clamp-2">{post.content}</p>
+                    <p className="text-xs text-slate-500">
+                      Last updated: {new Date(post.updatedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeletePost(post.id)}
-                    className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded transition"
-                  >
-                    Delete
-                  </button>
-                  </div>) }
+                {/* Right Section: Action Buttons */}
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  {activeTab === 'drafts' ? (
+                    <>
+                      {!post.published && (
+                        <button 
+                          onClick={() => openScheduleModal(post.id)}
+                          className="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-2 rounded transition"
+                        >
+                          Schedule
+                        </button>
+                      )}
+                      {!post.published && (
+                        <button
+                          onClick={() => handlePublishDraft(post.id)}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded transition"
+                        >
+                          Publish
+                        </button>
+                      )}
+                      <button
+                        onClick={() => openEditModal(post)}
+                        className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded transition"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => openEditModal(post)}
+                        className="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 py-2 rounded transition"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -340,23 +365,24 @@ const openScheduleModal = (postId) => {
                     placeholder="Write article body..."
                   />
                 </div>
-                      <div>
-                          <label htmlFor="UploadFile" className="block text-sm font-medium text-slate-300 mb-1">Upload Here</label>
-                          <input 
-                            type="file" 
-                            name="UploadFile" 
-                            id="UploadFile" 
-                            className="w-full text-sm text-slate-400
-                              file:mr-4 file:py-2 file:px-4
-                              file:rounded-lg file:border-0
-                              file:text-sm file:font-semibold
-                              file:bg-blue-600 file:text-white
-                              file:cursor-pointer hover:file:bg-blue-700
-                              bg-slate-900 border border-slate-700 rounded-lg cursor-pointer
-                              file:transition                            "
-                          />
-                        </div>
-                {/* Status Toggle (Only on initial creation) */}
+
+                <div>
+                  <label htmlFor="UploadFile" className="block text-sm font-medium text-slate-300 mb-1">Upload Attachment</label>
+                  <input 
+                    type="file" 
+                    name="UploadFile" 
+                    id="UploadFile" 
+                    className="w-full text-sm text-slate-400
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-lg file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-600 file:text-white
+                      file:cursor-pointer hover:file:bg-blue-700
+                      bg-slate-900 border border-slate-700 rounded-lg cursor-pointer
+                      file:transition"
+                  />
+                </div>
+
                 {!editingPost && (
                   <div className="flex items-center gap-2">
                     <input
@@ -392,46 +418,48 @@ const openScheduleModal = (postId) => {
             </div>
           </div>
         )}
-          {/* SCHEDULE MODAL */}
-          {isScheduleModalOpen && (
-            <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-              <div className="bg-slate-800 text-white rounded-xl p-6 max-w-sm w-full space-y-4 shadow-xl border border-slate-700">
-                <h3 className="text-lg font-semibold">Schedule Post Publication</h3>
 
-                <form onSubmit={handleSchedule} className="space-y-4">
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">
-                      Select Date & Time (Future Only)
-                    </label>
-                    <input
-                      type="datetime-local"
-                      required
-                      min={new Date().toISOString().slice(0, 16)} // 👈 Blocks selecting past dates/times
-                      value={scheduledDate}
-                      onChange={(e) => setScheduledDate(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
+        {/* SCHEDULE MODAL */}
+        {isScheduleModalOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+            <div className="bg-slate-800 text-white rounded-xl p-6 max-w-sm w-full space-y-4 shadow-xl border border-slate-700">
+              <h3 className="text-lg font-semibold">Schedule Post Publication</h3>
 
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsScheduleModalOpen(false)}
-                      className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded transition"
-                    >
-                      Confirm Schedule
-                    </button>
-                  </div>
-                </form>
-              </div>
+              <form onSubmit={handleSchedule} className="space-y-4">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">
+                    Select Date & Time (Future Only)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    required
+                    min={new Date().toISOString().slice(0, 16)}
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsScheduleModalOpen(false)}
+                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs rounded transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded transition"
+                  >
+                    Confirm Schedule
+                  </button>
+                </div>
+              </form>
             </div>
-          )}
+          </div>
+        )}
+
       </div>
     </div>
   );
