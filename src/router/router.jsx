@@ -8,10 +8,12 @@ import StructureDeck from '../component/Strukturedeck';
 import SealedProduct from '../component/SealedProduck';
 import Accessories from '../component/Accessories';
 import MyDeck from '../component/MyDeck';
-import Login from '../component/Login';
-import Register from '../component/Register';
+import Login from '../UserAcces/Login';
+import Register from '../UserAcces/Register';
 import Dashboard from '../dashboard/Dashboard';
 import SinglePostView from '../component/Singlepost';
+import PublishedPostsPage from '../component/PublishPostList';
+import ProfilePage from '../UserAcces/UserProfile';
 
 const routes = [
   {
@@ -35,7 +37,9 @@ const routes = [
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
       { path: 'dashboard' ,element:<Dashboard/> },
-      {path: 'posts/:id', element:<SinglePostView/>}
+      { path:'posts',element:< PublishedPostsPage /> },
+      {path: 'posts/:id', element:<SinglePostView/>},
+      {path: 'UserProfile',element:<ProfilePage/>}
     ],
   },
 ];

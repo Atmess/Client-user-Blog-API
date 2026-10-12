@@ -4,9 +4,11 @@ import Mainpage from './component/Mainpage';
 export default function Main() {
   
   return (
-    <div>
+    <div className="min-h-screen "  >
       <Header />
+      <div className='pt-20'>
       <Mainpage />
+      </div>
     </div>
   );
 }
