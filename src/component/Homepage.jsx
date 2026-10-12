@@ -11,9 +11,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
-  const [visibleCount, setVisibleCount] = useState(4); // Starts showing 6 posts
+  const [visibleCount, setVisibleCount] = useState(6); // Starts showing 6 posts
   const handleLoadMore = () => {
-    setVisibleCount((prevCount) => prevCount + 4);
+    setVisibleCount((prevCount) => prevCount + 6);
   };
   // Fetch published blog posts on component mount
   useEffect(() => {
