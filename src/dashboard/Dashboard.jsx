@@ -164,9 +164,10 @@ export default function Dashboard() {
           'Authorization': `Bearer ${token}`,
         },
       });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message ||'Failed to delete post' );
 
-      if (!response.ok) throw new Error('Failed to delete post');
-
+      console.log(data)
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     } catch (err) {
       alert(err.message);

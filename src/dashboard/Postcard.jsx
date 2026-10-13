@@ -8,14 +8,13 @@ export default function Postcard({activeTab,post,openEditModal,openScheduleModal
                 <div className="flex items-start gap-4 max-w-2xl">
                   {post.files && post.files.length > 0 && (
                     <div className="shrink-0 flex gap-2">
-                      {post.files.map((file) => (
+                      
                         <img 
-                          key={file.id}
-                          src={file.url} 
-                          alt={file.name} 
+                          src={post.files[0].url} 
+                          alt={post.files.name} 
                           className="h-20 w-20 rounded-lg object-cover border border-slate-700" 
                         />
-                      ))}
+                      
                     </div>
                   )}
 

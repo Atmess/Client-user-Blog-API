@@ -7,7 +7,11 @@ export default function PublishedPostsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-    const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  const [visibleCount, setVisibleCount] = useState(6); // Starts showing 6 posts
+  const handleLoadMore = () => {
+    setVisibleCount((prevCount) => prevCount + 6);
+  };  
 
   // Fetch all published posts on load
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function PublishedPostsPage() {
               placeholder="Search posts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
+              className="w-full bg-white border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-black focus:outline-none focus:border-blue-500 placeholder-slate-500"
             />
           </div>
         </div>
@@ -76,7 +80,7 @@ export default function PublishedPostsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {filteredPosts.map((post) => (
+              {filteredPosts.slice(0, visibleCount).map((post) => (
       <article
         key={post.id}
         className="bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 rounded-xl p-6 transition flex flex-col justify-between shadow-sm hover:shadow-md overflow-hidden"
@@ -116,6 +120,15 @@ export default function PublishedPostsPage() {
       </article>
     ))}
             </div>
+            
+          )}
+            {visibleCount < posts.length && (
+            <button 
+              onClick={handleLoadMore} 
+              className="load-more-btn mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Load More ({posts.length - visibleCount} remaining)
+            </button>
           )}
         </div>
         {/* ================= END POSTS ================= */}

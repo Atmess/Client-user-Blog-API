@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import stream from '../assets/picture/800px-LiveTwins.png';
 import { useAuth } from '../context/AuthContext';
-
+import logo from '../assets/picture/image1.png'
 
 export default function Home() {
 
@@ -151,16 +151,21 @@ export default function Home() {
       > 
         <div>
           {/* Optional Image Thumbnail from post.files */}
-          {post.files && post.files.length > 0 && (
+          
+          {post.files && post.files.length > 0 ? (
             <div className="mb-4 -mx-6 -mt-6">
               <img 
-                src={post.files[0].url} 
+                src={post.files[0].url } 
                 alt={post.files[0].name || post.title} 
                 className="w-full h-48 object-cover border-b border-slate-700/60"
               />
             </div>
-          )}
-
+          ):( <img 
+    src={logo} 
+    alt={post.title} 
+    className="w-full h-48 object-cover" // Add your preferred styling for the logo placeholder
+  />) }
+        
           <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
             <span>By {post.author?.username || 'Unknown'}</span>
             <span>{new Date(post.createdAt).toLocaleDateString()}</span>
