@@ -11,9 +11,11 @@ import MyDeck from '../component/MyDeck';
 import Login from '../UserAcces/Login';
 import Register from '../UserAcces/Register';
 import Dashboard from '../dashboard/Dashboard';
-import SinglePostView from '../component/Singlepost';
-import PublishedPostsPage from '../component/PublishPostList';
 import ProfilePage from '../UserAcces/UserProfile';
+import MiddleboardLayout from '../component/Middleboard';
+import SinglePostView from '../posts/Singlepost';
+import PublishedPostsPage from '../posts/PublishPostList';
+
 
 const routes = [
   {
@@ -21,7 +23,15 @@ const routes = [
     element: <Main />,
     errorElement: <ErrorPage />,
     children: [
+      {element :<MiddleboardLayout/>,
+        children:[
       { index: true, element: <Home /> },
+      { path: 'dashboard' ,element:<Dashboard/> },
+      { path:'posts',element:< PublishedPostsPage /> },
+      {path: 'posts/:id', element:<SinglePostView/>  },
+      {path: 'UserProfile',element:<ProfilePage/>},
+      ]
+      },
       {
         path: 'shop',
         element: <Shop />,
@@ -36,10 +46,10 @@ const routes = [
       { path: 'cart', element: <Cart /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
-      { path: 'dashboard' ,element:<Dashboard/> },
-      { path:'posts',element:< PublishedPostsPage /> },
-      {path: 'posts/:id', element:<SinglePostView/>},
-      {path: 'UserProfile',element:<ProfilePage/>}
+
+
+      
+      
     ],
   },
 ];

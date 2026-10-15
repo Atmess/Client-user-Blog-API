@@ -125,9 +125,9 @@ const handleSaveEdit = async (commentId) => {
   if (error) return <div className="text-center py-20 text-red-400">{error}</div>;
 
   return (
-    <div className="min-h-screen w-full md:w-[70%] bg-slate-900/90 text-slate-100 p-6 sm:p-12 ">
+    <div className="min-h-screen  text-slate-100 p-6 sm:p-12 ">
         {/*<button onClick={()=>{console.log(post)}}>test</button>*/}
-      <div className="w-full md:w-[60%] mx-auto space-y-6">
+      <div className=" mx-auto space-y-6">
         <Link to="/" className="text-sm text-blue-400 hover:underline">&larr; Back to Dashboard</Link>
         
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white">{post.title}</h1>

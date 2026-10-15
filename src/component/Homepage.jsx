@@ -43,7 +43,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-500 w-full md:w-[60%] text-slate-100 flex flex-col">
+    <div className="min-h-screen text-slate-100 flex flex-col">
 
       
       {/* HERO SECTION */}
@@ -76,7 +76,7 @@ export default function Home() {
                 >
                   Go to Dashboard
                 </Link>
-                <button onClick={()=>{console.log(posts)}}>Test</button>
+                
               </>
             ) : (
               <>

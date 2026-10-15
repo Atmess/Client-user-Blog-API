@@ -4,6 +4,7 @@ import Postcard from './Postcard';
 import PostCreateform from './Postcreateform';
 import Postscedule from './Postschedule';
 import { Link } from 'react-router-dom';
+import ActiveTabButton from "../component/Activetab.jsx";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -115,8 +116,9 @@ export default function Dashboard() {
           'Authorization': `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) throw new Error('Failed to publish draft');
+      const data = await response.json()
+      console.log(data)
+      if (!response.ok) throw new Error( data.message||'Failed to publish draft ' );
       fetchPosts();
     } catch (err) {
       alert(err.message);
@@ -200,7 +202,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen w-full md:w-[60%] bg-slate-500 text-slate-100 p-6">
+    <div  className=" text-slate-100 p-6 sm:p-12 space-y-8" >
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* HEADER */}
@@ -219,26 +221,18 @@ export default function Dashboard() {
 
         {/* TABS & NAVIGATION */}
         <div className="flex border-b border-slate-700 gap-4">
-          <button
-            onClick={() => setActiveTab('drafts')}
-            className={`pb-3 px-2 font-medium transition border-b-2 ${
-              activeTab === 'drafts'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            My Drafts
-          </button>
-          <button
-            onClick={() => setActiveTab('published')}
-            className={`pb-3 px-2 font-medium transition border-b-2 ${
-              activeTab === 'published'
-                ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Published Posts
-          </button>
+          <ActiveTabButton
+          currentTab={activeTab}
+          setActiveTab={setActiveTab}
+          nameforthisone={'drafts'}
+          nameForthis={"My Draft"}
+          />
+          <ActiveTabButton
+          currentTab={activeTab}
+          setActiveTab={setActiveTab}
+          nameforthisone={'published'}
+          nameForthis={'Published Posts'}
+          />
         </div>
 
         {/* POSTS LISTING AREA */}

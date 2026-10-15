@@ -45,12 +45,12 @@ export default function PublishedPostsPage() {
     post.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) return <div className=" min-h-screen w-full md:w-[60%] bg-slate-500 text-slate-100 p-6 sm:p-12  text-center py-20 text-slate-400">Loading posts...</div>;
-  if (error) return <div className=" min-h-screen w-full md:w-[60%] bg-slate-500 text-slate-100 p-6 sm:p-12 text-center py-20 text-red-400">{error}</div>;
+  if (loading) return <div className=" min-h-screen text-slate-100 p-6 sm:p-12  text-center py-20 text-slate-400">Loading posts...</div>;
+  if (error) return <div className=" min-h-screen  text-slate-100 p-6 sm:p-12 text-center py-20 text-red-400">{error}</div>;
 
   return (
-    <div className="min-h-screen w-full md:w-[60%] bg-slate-500 text-slate-100 p-6 sm:p-12">
-      <div className="w-full md:w-[70%] mx-auto space-y-8">
+    <div className="min-h-screen  text-slate-100 p-6 sm:p-12">
+      <div className=" mx-auto space-y-8">
         
         {/* ================= HEADER & SEARCH SECTION ================= */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
