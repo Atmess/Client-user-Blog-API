@@ -46,6 +46,11 @@ export default function Header() {
               Card
             </button>
           </Link>
+          <Link to="/message">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-500 transition text-sm font-medium">
+              Message
+            </button>
+          </Link>
         </div>
 
         {/* ================= 3. RIGHT DIV: User Profile & Dropdown ================= */}

@@ -15,6 +15,7 @@ import ProfilePage from '../UserAcces/UserProfile';
 import MiddleboardLayout from '../component/Middleboard';
 import SinglePostView from '../posts/Singlepost';
 import PublishedPostsPage from '../posts/PublishPostList';
+import MessagePage from '../Message/MessagePage';
 
 
 const routes = [
@@ -30,6 +31,7 @@ const routes = [
       { path:'posts',element:< PublishedPostsPage /> },
       {path: 'posts/:id', element:<SinglePostView/>  },
       {path: 'UserProfile',element:<ProfilePage/>},
+      {path:'message',element:<MessagePage/>}
       ]
       },
       {
