@@ -39,7 +39,7 @@ export default function Dashboard() {
     
     const endpoint = activeTab === 'drafts' 
       ? 'http://localhost:8080/api/post/draft' 
-      : 'http://localhost:8080/api/post/published';
+      : 'http://localhost:8080/api/post/userpublished';
 
     try {
       const response = await fetch(endpoint, {

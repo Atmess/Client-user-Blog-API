@@ -60,7 +60,7 @@ export default function ProfilePage() {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/api/post/published', {
+        const response = await fetch('http://localhost:8080/api/post/userpublished', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -87,6 +87,7 @@ export default function ProfilePage() {
     const fetchUserFiles = async () => {
       setLoadingPhoto(true);
       setPhotoError('');
+
 
       try {
         
@@ -120,6 +121,7 @@ export default function ProfilePage() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
       setAvatarFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -164,10 +166,9 @@ const handleDownload = async (fileId, fileName) => {
   const handleDeleteFile = async (fileId) => {
     try{
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/download/${fileId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+      const response = await fetch(`http://localhost:8080/api/files/${fileId}`, { // your real delete route
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
       });
       if (!response.ok){
         const errorData = await response.json();
@@ -237,8 +238,7 @@ const handleDownload = async (fileId, fileName) => {
   }
 
   return (
-    <div className="min-h-screen md:w-[50%] bg-slate-500 text-slate-100 p-6 sm:p-12 space-y-8">
-      
+      <div className="min-h-screen w-full bg-slate-500 text-slate-100 p-6 sm:p-12 space-y-8">
       {/* Profile Section Box */}
       <div className="max-w-xl mx-auto bg-slate-800/60 border border-slate-700/80 rounded-2xl p-8 shadow-xl space-y-6">
         
@@ -403,21 +403,21 @@ const handleDownload = async (fileId, fileName) => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.slice(0, visibleCount).map((post) => (
-              <article
-                key={post.id}
-                className="bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 rounded-xl p-6 transition flex flex-col justify-between shadow-sm hover:shadow-md overflow-hidden"
-              >
+             <article
+  key={post.id}
+  className="bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 rounded-xl p-6 transition flex flex-col justify-between shadow-sm hover:shadow-md"
+>
                 <div>
                   {post.files && post.files.length > 0 ? (
-                    <div className="mb-4 -mx-6 -mt-6">
-                      <img 
-                        src={post.files[0].url} 
-                        alt={post.files[0].name || post.title} 
+                    <div className="mb-4 -mx-6 -mt-6 overflow-hidden rounded-t-xl">
+                      <img
+                        src={post.files?.[0]?.url || logo}
+                        alt={post.files?.[0]?.name || post.title}
                         className="w-full h-48 object-cover border-b border-slate-700/60"
                       />
                     </div>
                   ) : (
-                    <div className="mb-4 -mx-6 -mt-6">
+                    <div className="mb-4 -mx-6 -mt-6  overflow-hidden rounded-t-xl">
                       <img 
                         src={logo} 
                         alt={post.title} 
@@ -462,13 +462,13 @@ const handleDownload = async (fileId, fileName) => {
       </div>
 
       {/* My Photo Section */}
-      <div>
+      <div className="max-w-6xl w-full mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-white">My Photo</h2>
         </div>
 
         {loadingPhoto ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
             {[1, 2, 3].map((n) => (
               <div key={n} className="bg-slate-800/50 border border-slate-800 p-6 rounded-xl animate-pulse h-48">
                 <div className="h-6 bg-slate-700 rounded w-3/4 mb-4"></div>
@@ -495,7 +495,7 @@ const handleDownload = async (fileId, fileName) => {
                   activeDropdownId === foto.id ? 'z-30' : 'z-10'
                 }`}
               >
-                <div className="mb-4 -mx-6 -mt-6">
+                <div className="mb-4 -mx-6 -mt-6  overflow-hidden rounded-t-xl">
                   <img 
                     src={foto.url} 
                     alt={foto.name} 

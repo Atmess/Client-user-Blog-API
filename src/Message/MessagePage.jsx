@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import MessageCreateForm from './Messagecreateform';
+import { useAuth } from '../context/AuthContext';
 
 export default function MessagesPage() {
+  const user = useAuth()
   const [conversations, setConversations] = useState([]);
   const [activeContact, setActiveContact] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -8,9 +11,10 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   // Add these states inside MessagesPage component:
-const [isNewModalOpen, setIsNewModalOpen] = useState(false);
-const [allUsers, setAllUsers] = useState([]);
-
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [newMsgForm, setNewMsgForm] = useState({ recipient: '', content: '' });
+  const [isSending, setIsSending] = useState(false);
+  const [search, setSearch] = useState('');
   const token = localStorage.getItem('token');
 
   // 1. Fetch conversations/contacts list on mount
@@ -19,27 +23,28 @@ const [allUsers, setAllUsers] = useState([]);
   }, []);
 
   // 2. Fetch messages whenever an active contact is selected
-  useEffect(() => {
+useEffect(() => {
     if (activeContact) {
-      fetchMessages(activeContact.id);
-    }
-  }, [activeContact]);
+    fetchMessages(activeContact.id);
+  }
+}, [activeContact]);
 
-  const fetchConversations = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/messages/contacts', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Failed to load conversations');
-      const data = await response.json();
-      setConversations(data);
-      if (data.length > 0) setActiveContact(data[0]); // Select first contact by default
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchConversations = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/api/messages/convertion', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to load conversations');
+    const data = await response.json();
+const others = data.filter((c) => c.id !== user.id);
+setConversations(others);
+if (others.length > 0) setActiveContact(others[0]);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchMessages = async (userId) => {
     try {
@@ -86,7 +91,10 @@ const openNewMessageModal = async () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
+if (!response.ok) {
+  const errorData = await response.json().catch(() => ({}));
+  throw new Error(errorData.message || 'Failed to send message');
+}
       const sentMessage = await response.json();
 
       // Append locally for instant UI update
@@ -97,7 +105,54 @@ const openNewMessageModal = async () => {
     }
   };
 
+const handleCreateMessage = async (e) => {
+  e.preventDefault();
+  setIsSending(true);
+  try {
+    const response = await fetch('http://localhost:8080/api/messages/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        recipient: newMsgForm.recipient,
+        content: newMsgForm.content,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to send message');
+    }
+
+    const sent = await response.json();
+    const user = sent.receiver; // the backend now returns who it matched
+
+    if (!conversations.some((c) => c.id === user.id)) {
+      setConversations([user, ...conversations]);
+    }
+    setActiveContact(user);
+
+    setNewMsgForm({ recipient: '', content: '' });
+    setIsNewModalOpen(false);
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    setIsSending(false);
+  }
+};
+
+const filteredConversations = conversations.filter((c) => {
+  const q = search.trim().toLowerCase();
+  if (!q) return true;
   return (
+    c.username?.toLowerCase().includes(q) ||
+    c.email?.toLowerCase().includes(q) ||
+    c.lastMessage?.content?.toLowerCase().includes(q)
+  );
+})
+   return (
     <div>
     <div className="text-slate-100 p-4 sm:p-8 space-y-6">
       <div>
@@ -120,39 +175,50 @@ const openNewMessageModal = async () => {
   </div>
 
   {/* 👈 Centered Create New Button / Div */}
-  <div className="p-3 border-b border-slate-700/60 flex justify-center items-center">
-   <button 
-  onClick={openNewMessageModal}
-  className="w-full py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-2"
->
-  <span>+ Create New Message</span>
-</button>
-  </div>
+<div className="p-3 border-b border-slate-700/60 space-y-2">
+  <button
+    onClick={() => setIsNewModalOpen(true)}
+    className="w-full py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-semibold transition cursor-pointer"
+  >
+    + Create New Message
+  </button>
+  <input
+    type="text"
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    placeholder="Search name, email or message..."
+    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+  />
+</div>
 
-  {conversations.length === 0 ? (
-    <div className="p-6 text-center text-slate-500 text-sm">No messages yet.</div>
-  ) : (
-    conversations.map((contact) => (
-      <button
-        key={contact.id}
-        onClick={() => setActiveContact(contact)}
-        className={`w-full text-left p-4 flex items-center gap-3 transition border-b border-slate-700/30 cursor-pointer ${
-          activeContact?.id === contact.id ? 'bg-slate-700/40 border-l-4 border-l-blue-500' : 'hover:bg-slate-700/20'
-        }`}
-      >
-        <div className="w-10 h-10 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0 font-bold text-slate-200">
-          {contact.username[0]?.toUpperCase()}
+{filteredConversations.length === 0 ? (
+  <div className="p-6 text-center text-slate-500 text-sm">
+    {search ? 'No results.' : 'No messages yet.'}
+  </div>
+) : (
+  filteredConversations.map((contact) => (
+    <button
+      key={contact.id}
+      onClick={() => setActiveContact(contact)}
+      className={`w-full text-left p-4 flex items-center gap-3 transition border-b border-slate-700/30 cursor-pointer ${
+        activeContact?.id === contact.id ? 'bg-slate-700/40 border-l-4 border-l-blue-500' : 'hover:bg-slate-700/20'
+      }`}
+    >
+      <div className="w-10 h-10 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0 font-bold text-slate-200">
+        {contact.username?.[0]?.toUpperCase()}
+      </div>
+      <div className="overflow-hidden flex-1">
+        <div className="font-medium text-white truncate">{contact.username}</div>
+        <div className="text-xs text-slate-400 truncate">
+          {contact.lastMessage?.content || contact.email}
         </div>
-        <div className="overflow-hidden flex-1">
-          <div className="font-medium text-white truncate">{contact.username}</div>
-          <div className="text-xs text-slate-400 truncate">{contact.email}</div>
-        </div>
-      </button>
-    ))
-  )}
+      </div>
+    </button>
+  ))
+)}
 </div>
           {/* RIGHT SIDE: Active Chat Thread */}
-          <div className="col-span-2 flex flex-col justify-between bg-slate-800/40">
+          <div className="col-span-2 flex flex-col h-full min-h-0 bg-slate-800/40">
             {activeContact ? (
               <>
                 {/* Chat Header */}
@@ -164,7 +230,8 @@ const openNewMessageModal = async () => {
                 </div>
 
                 {/* Messages Body */}
-                <div className="p-4 overflow-y-auto flex-1 space-y-4">
+                 <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+                
                   {messages.length === 0 ? (
                     <div className="text-center py-20 text-slate-500 text-sm">
                       No messages with @{activeContact.username}. Start the conversation below!
@@ -186,6 +253,7 @@ const openNewMessageModal = async () => {
                       );
                     })
                   )}
+                
                 </div>
 
                 {/* Message Input Form */}
@@ -215,38 +283,13 @@ const openNewMessageModal = async () => {
         </div>
       )}
     </div>
-    {isNewModalOpen && (
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-    <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-      <h2 className="text-lg font-bold text-white">Start a New Conversation</h2>
-      <div className="max-h-60 overflow-y-auto space-y-2">
-        {allUsers.map((u) => (
-          <button
-            key={u.id}
-            onClick={() => {
-              setActiveContact(u);
-              // Add to conversations list if not already there
-              if (!conversations.some((c) => c.id === u.id)) {
-                setConversations([u, ...conversations]);
-              }
-              setIsNewModalOpen(false);
-            }}
-            className="w-full text-left p-3 rounded-xl bg-slate-700/40 hover:bg-slate-700 text-white text-sm transition flex justify-between items-center cursor-pointer"
-          >
-            <span>@{u.username}</span>
-            <span className="text-xs text-slate-400">{u.email}</span>
-          </button>
-        ))}
-      </div>
-      <button
-        onClick={() => setIsNewModalOpen(false)}
-        className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-medium cursor-pointer"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
+    {isNewModalOpen && (<MessageCreateForm
+    formData={newMsgForm}
+    setFormData={setNewMsgForm}
+    handleSubmit={handleCreateMessage}
+    closeModal={() => setIsNewModalOpen(false)}
+    isSubmitting={isSending}
+    />)}
     </div>
   );
 }
