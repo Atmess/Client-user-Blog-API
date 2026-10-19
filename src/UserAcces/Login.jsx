@@ -84,7 +84,12 @@ export default function Login() {
             Log In
           </button>
         </form>
-        <div>don't have accaunt <a href="/register">sign up here</a></div>
+        <div>don't have accaunt <Link
+                  to="/register"
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg transition"
+                >
+                  Sign Up Here
+                </Link></div>
       </div>
       
     </div>
