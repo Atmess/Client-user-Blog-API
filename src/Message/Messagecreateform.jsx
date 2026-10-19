@@ -12,23 +12,31 @@ export default function MessageCreateForm({
         <h2 className="text-xl font-bold text-white">New Message</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-<div>
-  <label htmlFor="recipient" className="block text-sm font-medium text-slate-300 mb-1">
-    To
-  </label>
-  <input
-    id="recipient"
-    type="text"
-    required
-    value={formData.recipient}
-    onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
-    className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
-    placeholder="Username or email..."
-  />
-</div>
+          <div>
+            <label
+              htmlFor="recipient"
+              className="block text-sm font-medium text-slate-300 mb-1"
+            >
+              To
+            </label>
+            <input
+              id="recipient"
+              type="text"
+              required
+              value={formData.recipient}
+              onChange={(e) =>
+                setFormData({ ...formData, recipient: e.target.value })
+              }
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
+              placeholder="Username or email..."
+            />
+          </div>
 
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-slate-300 mb-1">
+            <label
+              htmlFor="content"
+              className="block text-sm font-medium text-slate-300 mb-1"
+            >
               Message
             </label>
             <textarea
@@ -36,7 +44,9 @@ export default function MessageCreateForm({
               required
               rows="6"
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
               placeholder="Write your message..."
             />

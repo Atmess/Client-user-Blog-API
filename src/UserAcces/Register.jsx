@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
+  import API_BASE_URL from '../config.js'
 export default function Register() {
   const [formData, setFormData] = useState({
     username: '',
@@ -18,7 +18,7 @@ export default function Register() {
   // Handle controlled input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    
+
     // Clear individual field error when user starts typing again
     if (fieldErrors[e.target.name]) {
       setFieldErrors((prev) => ({ ...prev, [e.target.name]: '' }));
@@ -37,7 +37,12 @@ export default function Register() {
     const trimmedConfirmPassword = formData.confirmPassword.trim();
 
     // 1. Client-side empty check
-    if (!trimmedUsername || !trimmedEmail || !trimmedPassword || !trimmedConfirmPassword) {
+    if (
+      !trimmedUsername ||
+      !trimmedEmail ||
+      !trimmedPassword ||
+      !trimmedConfirmPassword
+    ) {
       setServerError('All fields are required and cannot be empty.');
       return;
     }
@@ -50,7 +55,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/register', {
+      const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,19 +83,22 @@ export default function Register() {
           });
           setFieldErrors(errorsObj);
         } else {
-          setServerError(data.message || 'Registration failed. Please try again.');
+          setServerError(
+            data.message || 'Registration failed. Please try again.'
+          );
         }
         return;
       }
 
       // Success: User created (201 Created) -> Navigate to Login page
-      navigate('/login', { 
-        state: { message: 'Account created successfully! Please log in.' } 
+      navigate('/login', {
+        state: { message: 'Account created successfully! Please log in.' },
       });
-
     } catch (err) {
       console.error('Network Error:', err);
-      setServerError('Unable to connect to the server. Please check if your backend is running.');
+      setServerError(
+        'Unable to connect to the server. Please check if your backend is running.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +138,9 @@ export default function Register() {
               required
             />
             {fieldErrors.username && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.username}</p>
+              <p className="mt-1 text-xs text-red-600">
+                {fieldErrors.username}
+              </p>
             )}
           </div>
 
@@ -176,12 +186,16 @@ export default function Register() {
               required
             />
             {fieldErrors.password && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
+              <p className="mt-1 text-xs text-red-600">
+                {fieldErrors.password}
+              </p>
             )}
           </div>
           {/* Confirm Password Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
             <input
               type="password"
               name="confirmPassword"
@@ -189,12 +203,16 @@ export default function Register() {
               value={formData.confirmPassword}
               onChange={handleChange}
               className={`w-full p-3 bg-white border rounded-md shadow-sm text-gray-800 ${
-                fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                fieldErrors.confirmPassword
+                  ? 'border-red-500'
+                  : 'border-gray-300'
               }`}
               required
             />
             {fieldErrors.confirmPassword && (
-              <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
+              <p className="mt-1 text-xs text-red-600">
+                {fieldErrors.confirmPassword}
+              </p>
             )}
           </div>
 
@@ -210,7 +228,10 @@ export default function Register() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-700 font-semibold hover:underline">
+          <Link
+            to="/login"
+            className="text-blue-700 font-semibold hover:underline"
+          >
             Log in here
           </Link>
         </p>

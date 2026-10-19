@@ -17,22 +17,22 @@ import SinglePostView from '../posts/Singlepost';
 import PublishedPostsPage from '../posts/PublishPostList';
 import MessagePage from '../Message/MessagePage';
 
-
 const routes = [
   {
     path: '/',
     element: <Main />,
     errorElement: <ErrorPage />,
     children: [
-      {element :<MiddleboardLayout/>,
-        children:[
-      { index: true, element: <Home /> },
-      { path: 'dashboard' ,element:<Dashboard/> },
-      { path:'posts',element:< PublishedPostsPage /> },
-      {path: 'posts/:id', element:<SinglePostView/>  },
-      {path: 'UserProfile',element:<ProfilePage/>},
-      {path:'message',element:<MessagePage/>}
-      ]
+      {
+        element: <MiddleboardLayout />,
+        children: [
+          { index: true, element: <Home /> },
+          { path: 'dashboard', element: <Dashboard /> },
+          { path: 'posts', element: <PublishedPostsPage /> },
+          { path: 'posts/:id', element: <SinglePostView /> },
+          { path: 'UserProfile', element: <ProfilePage /> },
+          { path: 'message', element: <MessagePage /> },
+        ],
       },
       {
         path: 'shop',
@@ -48,10 +48,6 @@ const routes = [
       { path: 'cart', element: <Cart /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
-
-
-      
-      
     ],
   },
 ];

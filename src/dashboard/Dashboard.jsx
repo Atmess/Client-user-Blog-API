@@ -4,11 +4,13 @@ import Postcard from './Postcard';
 import PostCreateform from './Postcreateform';
 import Postscedule from './Postschedule';
 import { Link } from 'react-router-dom';
-import ActiveTabButton from "../component/Activetab.jsx";
+import ActiveTabButton from '../component/Activetab.jsx';
+import API_BASE_URL from '../config.js'
+
 
 export default function Dashboard() {
   const { user } = useAuth();
-  
+
   // State management
   const [activeTab, setActiveTab] = useState('drafts'); // 'drafts' | 'published'
   const [posts, setPosts] = useState([]);
@@ -18,7 +20,11 @@ export default function Dashboard() {
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
-  const [formData, setFormData] = useState({ title: '', content: '', published: false });
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    published: false,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Schedule Modal State
@@ -36,15 +42,16 @@ export default function Dashboard() {
   const fetchPosts = async () => {
     setLoading(true);
     setError('');
-    
-    const endpoint = activeTab === 'drafts' 
-      ? 'http://localhost:8080/api/post/draft' 
-      : 'http://localhost:8080/api/post/userpublished';
+
+    const endpoint =
+      activeTab === 'drafts'
+        ? `${API_BASE_URL}/api/post/draft`
+        : `${API_BASE_URL}/api/post/userpublished`;
 
     try {
       const response = await fetch(endpoint, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -65,8 +72,8 @@ export default function Dashboard() {
 
     const isEditing = Boolean(editingPost);
     const url = isEditing
-      ? `http://localhost:8080/api/post/${editingPost.id}`
-      : 'http://localhost:8080/api/post/publish';
+      ? `${API_BASE_URL}/api/post/${editingPost.id}`
+      : `${API_BASE_URL}/api/post/publish`;
 
     const method = isEditing ? 'PUT' : 'POST';
 
@@ -75,7 +82,7 @@ export default function Dashboard() {
       data.append('title', formData.title);
       data.append('content', formData.content);
       data.append('published', formData.published);
-      
+
       if (formData.publishTime) {
         data.append('publishTime', formData.publishTime);
       }
@@ -88,15 +95,15 @@ export default function Dashboard() {
       const response = await fetch(url, {
         method,
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: data,
       });
 
       if (!response.ok) throw new Error('Failed to save post');
-      
+
       const result = await response.json();
-      console.log("Saved post result:", result);
+      console.log('Saved post result:', result);
 
       closeModal();
       fetchPosts();
@@ -110,15 +117,19 @@ export default function Dashboard() {
   // 3. PUBLISH DRAFT
   const handlePublishDraft = async (postId) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/post/${postId}/publishdraft`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await response.json()
-      console.log(data)
-      if (!response.ok) throw new Error( data.message||'Failed to publish draft ' );
+      const response = await fetch(
+        `${API_BASE_URL}/api/post/${postId}/publishdraft`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      if (!response.ok)
+        throw new Error(data.message || 'Failed to publish draft ');
       fetchPosts();
     } catch (err) {
       alert(err.message);
@@ -132,12 +143,12 @@ export default function Dashboard() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/post/${schedulingPostId}/publishdraft`,
+        `${API_BASE_URL}/api/post/${schedulingPostId}/publishdraft`,
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             publishTime: scheduledDate,
@@ -160,16 +171,17 @@ export default function Dashboard() {
     if (!confirm('Are you sure you want to delete this post?')) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/post/${postId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/post/${postId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message ||'Failed to delete post' );
+      if (!response.ok)
+        throw new Error(data.message || 'Failed to delete post');
 
-      console.log(data)
+      console.log(data);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     } catch (err) {
       alert(err.message);
@@ -185,7 +197,11 @@ export default function Dashboard() {
 
   const openEditModal = (post) => {
     setEditingPost(post);
-    setFormData({ title: post.title, content: post.content, published: post.published });
+    setFormData({
+      title: post.title,
+      content: post.content,
+      published: post.published,
+    });
     setIsModalOpen(true);
   };
 
@@ -202,14 +218,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div  className=" text-slate-100 p-6 sm:p-12 space-y-8" >
+    <div className=" text-slate-100 p-6 sm:p-12 space-y-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/90 p-6 rounded-xl border border-slate-700 shadow-md">
           <div>
             <h1 className="text-2xl font-bold">Author Dashboard</h1>
-            <p className="text-sm text-slate-400">Manage your published articles and draft manuscripts.</p>
+            <p className="text-sm text-slate-400">
+              Manage your published articles and draft manuscripts.
+            </p>
           </div>
           <button
             onClick={openCreateModal}
@@ -222,27 +239,29 @@ export default function Dashboard() {
         {/* TABS & NAVIGATION */}
         <div className="flex border-b border-slate-700 gap-4">
           <ActiveTabButton
-          currentTab={activeTab}
-          setActiveTab={setActiveTab}
-          nameforthisone={'drafts'}
-          nameForthis={"My Draft"}
+            currentTab={activeTab}
+            setActiveTab={setActiveTab}
+            nameforthisone={'drafts'}
+            nameForthis={'My Draft'}
           />
           <ActiveTabButton
-          currentTab={activeTab}
-          setActiveTab={setActiveTab}
-          nameforthisone={'published'}
-          nameForthis={'Published Posts'}
+            currentTab={activeTab}
+            setActiveTab={setActiveTab}
+            nameforthisone={'published'}
+            nameForthis={'Published Posts'}
           />
         </div>
 
         {/* POSTS LISTING AREA */}
-        {    !user ? (
+        {!user ? (
           <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-800 space-y-4">
             <h2 className="text-xl font-bold text-white">Access Restricted</h2>
-            <p className="text-slate-400 text-sm">Please log in to view and manage your posts.</p>
+            <p className="text-slate-400 text-sm">
+              Please log in to view and manage your posts.
+            </p>
             <div>
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl transition text-sm"
               >
                 Log In
@@ -250,7 +269,9 @@ export default function Dashboard() {
             </div>
           </div>
         ) : loading ? (
-          <div className="text-center py-12 text-slate-400">Loading articles...</div>
+          <div className="text-center py-12 text-slate-400">
+            Loading articles...
+          </div>
         ) : error ? (
           <div className="p-4 bg-red-900/30 border border-red-500 rounded-lg text-red-300">
             {error}
@@ -278,25 +299,24 @@ export default function Dashboard() {
         {/* CREATE / EDIT POST MODAL */}
         {isModalOpen && (
           <PostCreateform
-          formData={formData}
-          setFormData={setFormData}
-          handleSubmit={handleSubmit}
-          closeModal={closeModal}
-          isSubmitting={isSubmitting}
-          editingPost={editingPost}
+            formData={formData}
+            setFormData={setFormData}
+            handleSubmit={handleSubmit}
+            closeModal={closeModal}
+            isSubmitting={isSubmitting}
+            editingPost={editingPost}
           />
         )}
 
         {/* SCHEDULE MODAL */}
         {isScheduleModalOpen && (
           <Postscedule
-          handleSchedule={handleSchedule}
-          setIsScheduleModalOpen={setIsScheduleModalOpen}
-          setScheduledDate={setScheduledDate}
-          scheduledDate={scheduledDate}
+            handleSchedule={handleSchedule}
+            setIsScheduleModalOpen={setIsScheduleModalOpen}
+            setScheduledDate={setScheduledDate}
+            scheduledDate={scheduledDate}
           />
         )}
-
       </div>
     </div>
   );

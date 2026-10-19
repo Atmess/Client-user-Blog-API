@@ -1,4 +1,9 @@
-export default function ActiveTabButton({ currentTab, setActiveTab, nameforthisone, nameForthis }) {
+export default function ActiveTabButton({
+  currentTab,
+  setActiveTab,
+  nameforthisone,
+  nameForthis,
+}) {
   return (
     <button
       onClick={() => setActiveTab(nameforthisone)}
